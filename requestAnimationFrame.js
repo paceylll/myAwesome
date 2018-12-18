@@ -1,5 +1,5 @@
 /**
- * 问题：需要渲染1000个div，使得页面不卡住
+ * 问题：需要渲染10000个div，使得页面不卡住
  * 思路：重点是递归使用requestAnimationFrame来渲染
  * 另外也使用了DocumentFragment来增加性能
  */
