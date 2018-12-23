@@ -32,6 +32,7 @@
 		this.data = options.data;
 		this.className = $.extend(options.className);
 		this.adTitleText = "title";
+		this.guideText = "长按";
 		this.$body = "body";
 		this.touchStartCallBack = utils.throttle(options.touchStartCallBack);
 		this.initMainSectionElems().init();
@@ -42,13 +43,15 @@
 
 		init: function () {
 			utils.cacaheImgs(this.data);
-			this.renderTaskSection().unbindTaskItemEvents()
-				.bindTaskItemEvents().unbindDialogEvent().bindDialogEvent();
+			this.renderTaskSection()
+				.unbindTaskItemevent().bindTaskItemevent()
+				.unbindDialogEvent().bindDialogEvent();
 			return this;
 		},
 
 		initMainSectionElems: function () {
-			var domList = ["dialog", "touchPanel", "taskItem", "progress", "adText"];
+			var domList = ["dialog", "diaContent", "touchPanel", 
+			"taskItem", "progress", "adText", "diaClose"];
 			domList.forEach(function (item) {
 				this["$" + item] = "." + this.className[item];
 			}.bind(this))
@@ -106,45 +109,81 @@
 			return this;
 		},
 
-		bindTaskItemEvents: function () {
+		bindTaskItemevent: function () {
 			var self = this, time = 0;
 			$(this.$taskItem).on("touchstart", function (ev) {
 				time = +new Date;
-				self.touchStart(ev);
+				self.panelTouchStart(ev);
 			}).on("touchmove", function () {
-				self.touchMove();
+				self.panelTouchMove();
 			}).on("touchend", function (ev) {
-				self.touchEnd();
+				self.panelTouchEnd();
 				var timeEnd = +new Date;
 				if (timeEnd - time < 150) { self.showDialog(ev); }
 			})
 			return this;
 		},
 
-		unbindTaskItemEvents: function () {
+		unbindTaskItemevent: function () {
 			$(this.$taskItem).off("touchstart").off("touchmove").off("touchend");
 			return this;
 		},
 
-		touchStart: function (ev) {
+		bindDialogEvent: function () {
+			var self = this;
+			$(this.$diaContent).on("touchstart", function () {
+				self.dialogTouchStart();
+			}).on("touchmove", function () {
+				self.dialogTouchMove();
+			}).on("touchend", function () {
+				self.dialogTouchEnd();
+			})
+			return this;
+		},
+
+		unbindDialogEvent: function () {
+			$(this.$dialog).off("touchstart").off("touchmove").off("touchend");
+			return this;
+		},
+
+		panelTouchStart: function (ev) {
 			this.showTouchPanel(ev).showProgress();
 			var cb = this.touchStartCallBack;
 			typeof cb === 'function' && cb();
 			return this;
 		},
 
-		touchMove: function () {
+		panelTouchMove: function () {
 			this.hideTouchPanel().hideProgress();
 			return this;
 		},
 
-		touchEnd: function () {
+		panelTouchEnd: function () {
 			this.hideTouchPanel().hideProgress();
+			return this;
+		},
+
+		dialogTouchStart: function () {
+			$(this.$diaContent).addClass("hide");
+			$(this.$dialog).find("img").removeClass("hide");
+			return this;
+		},
+
+		dialogTouchMove: function () {
+			$(this.$diaContent).removeClass("hide");
+			$(this.$dialog).find("img").addClass("hide");
+			return this;
+		},
+
+		dialogTouchEnd: function () {
+			$(this.$diaContent).removeClass("hide");
+			$(this.$dialog).find("img").addClass("hide");
 			return this;
 		},
 
 		showTouchPanel: function (ev) {
-			var target = $(ev.target), src = target.data("src"), $panel = $(this.$touchPanel);
+			var target = $(ev.target), src = target.data("src"),
+				$panel = $(this.$touchPanel);
 			$(this.$touchPanel).find("img").attr("src", src);
 			utils.nextTick(function () {
 				$panel.removeClass("hide");
@@ -160,12 +199,19 @@
 		},
 
 		renderDialog: function () {
-			var dialog = '\
-			<div class="hide ' + this.className.dialog + '">\
-				<img src="" />\
-			</div>\
-			';
+			var className = this.className, self = this,
+				dialog = '\
+				<div class="hide ' + className.dialog + '">\
+					<div class="' + className.diaContent + '">xxxx</div>\
+					<img class="hide" src="" />\
+					<p> ' + this.guideText + '</p>\
+					<em class="' + className.diaClose + '">x</em>\
+				</div>\
+				';
 			$(this.$body).append(dialog);
+			$(document).on("click", this.$diaClose, function() {
+				self.hideDialog();
+			});
 			return this;
 		},
 
@@ -180,19 +226,6 @@
 
 		hideDialog: function () {
 			$(this.$dialog).addClass("hide");
-			return this;
-		},
-
-		bindDialogEvent: function () {
-			var $dialog = $(this.$dialog);
-			$dialog.on("touchstart", function () {
-
-			})
-			return this;
-		},
-
-		unbindDialogEvent: function () {
-
 			return this;
 		},
 
@@ -212,7 +245,7 @@
 
 		updateTaskItem: function (data) {
 			this.data = data;
-			this.renderTaskItem().unbindTaskItemEvents().bindTaskItemEvents();
+			this.renderTaskItem().unbindTaskItemevent().bindTaskItemevent();
 			return this;
 		}
 	};
@@ -230,14 +263,16 @@
 				touchPanel: 'touchPanel',
 				dialog: 'dialog',
 				progress: 'progress',
-				adText: 'adText'
+				adText: 'adText',
+				diaClose: 'close',
+				diaContent: 'diaContent'
 			};
 		var app = new touchScanQrCodeApp({
 			el: "#app",
 			data: data,
 			className: className,
 			touchStartCallBack: function () {
-				app.updateTaskItem(data);
+				// app.updateTaskItem(data);
 			}
 		});
 	})
