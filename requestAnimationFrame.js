@@ -3,8 +3,8 @@
  * 思路：重点是递归使用requestAnimationFrame来渲染
  * 另外也使用了DocumentFragment来增加性能
  */
-const total = 10000;
-let i = 0, once = 170;
+const total = 100;
+let i = 0, once = 1700;
 function render() {
   const fragment = document.createDocumentFragment();
   let povint = i + once;
