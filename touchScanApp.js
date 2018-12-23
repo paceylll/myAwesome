@@ -31,7 +31,7 @@
 		this.el = $(options.el);
 		this.data = options.data;
 		this.className = $.extend(options.className);
-		this.adTitleText = "回复666";
+		this.adTitleText = "title";
 		this.$body = "body";
 		this.touchStartCallBack = utils.throttle(options.touchStartCallBack);
 		this.initMainSectionElems().init();
